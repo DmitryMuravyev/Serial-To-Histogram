@@ -10,7 +10,7 @@
 
 <h1>Details</h1>
 
-A very simple application for plotting a histogram based on data from the serial port. It can be used to estimate the noise level of the ADC or to study the distribution of any other values. The application is written in .NET/Winforms, because Winforms has a standard Control element (Chart) that allows to build such diagrams.
+A very simple application for plotting a histogram based on data from the serial port. It can be used to estimate the noise level of the ADC or to study the distribution of any other values. The application is written in .NET/Winforms (Visual Studio), because Winforms has a standard Control element (Chart) that allows to build such diagrams.
 <br /><br />
 <img width="764" alt="STH_mV" src="https://github.com/DmitryMuravyev/Serial-To-Histogram/assets/152902525/ce7fc65b-675a-4a28-9da1-602379ec40f5">
 <br /><br />
