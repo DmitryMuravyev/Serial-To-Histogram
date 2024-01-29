@@ -484,7 +484,7 @@ namespace SerialToHistogram
                             Console.WriteLine("Wrong ADC resolution selected by the MCU: {0}. The maximum allowed resolution will be used: {1}", intReading, maxADCResolution);
                             intReading = maxADCResolution;
                         }
-                        if (intReading != _resolution)
+                        if ((intReading != _resolution) && (intReading > 0))
                         {
                             // If the MCU has selected a new ADC resolution, we must allocate new buffers and reset the counter
 
