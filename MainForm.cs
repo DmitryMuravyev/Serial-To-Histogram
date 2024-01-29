@@ -674,7 +674,7 @@ namespace SerialToHistogram
         {
             _updateTimer.Elapsed -= OnTimedEvent;
             DisconnectPort();
-            // Because of "catch" in RunTheMethod it os not necessary to process events after disabling Port and Timer, but I leave it here just for the case.
+            // Because of "catch" in RunTheMethod it is not necessary to process events after disabling Port and Timer, but I leave it here just for the case.
             Application.DoEvents();
         }
 
