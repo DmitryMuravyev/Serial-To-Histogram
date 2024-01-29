@@ -235,7 +235,7 @@ namespace SerialToHistogram
             {
 
                 histogramChart.Series[0].Points.Clear();
-                double minimum = float.MaxValue;
+                double minimum = double.MaxValue;
                 double maximum = 0.0F;
                 bool valuesFound = false;
 
