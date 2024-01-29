@@ -55,4 +55,4 @@ void loop() {
 }
 ```
 
-Feel free to change the source code to fix bugs and add more features.
+Feel free to make changes to the source code to fix bugs and add more features.
