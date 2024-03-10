@@ -76,7 +76,7 @@ namespace SerialToHistogram
 
         //  Private Variables Declaration
         private System.Timers.Timer _updateTimer;
-        private SerialPort _serialPort;
+        private SerialPort _serialPort = null;
         private volatile bool _justConnected;
         private volatile byte[] _buffer;
         private volatile int _position = 0;
@@ -124,8 +124,7 @@ namespace SerialToHistogram
             _updateTimer.Elapsed += OnTimedEvent;
             _updateTimer.AutoReset = true;
 
-            // Initialize serial port and small input buffer for raw data
-            _serialPort = new SerialPort();
+            // Initialize small input buffer for raw data
             _buffer = new byte[serialBufferSize];
 
             speedComboBox.SelectedIndex = defaultPortBaudRateIndex;
@@ -143,6 +142,7 @@ namespace SerialToHistogram
         //--------------------------------------------------------------------------------------------------------------------------
         public void UpdatePorts()
         {
+            CheckPort();
             var ports = SerialPort.GetPortNames().OrderBy(name => name);
             portsComboBox.Items.Clear();
             bool portFound = false;
@@ -172,31 +172,35 @@ namespace SerialToHistogram
         {
             DisconnectPort();
 
-            _currentPort = portsComboBox.SelectedItem.ToString();
+            string newPort = portsComboBox.SelectedItem.ToString();
 
             // Reset all data if a new port is selected
-            if (!_currentPort.Equals(_serialPort.PortName))
+            if (!_currentPort.Equals(newPort))
             {
-                Array.Clear(_readings, 0, _readings.Length);
-                Array.Clear(_histogram, 0, _histogram.Length);
-                _pointer = 0;
-                _averageValue = _averageADCValue = 0.0F;
-                _vRef = 0.0F;
-                UpdateAverageValue();
-                UpdateVrefValue();
-
-                _serialPort.PortName = _currentPort;
+                clearData();
+                _currentPort = newPort;
             }
 
+            _serialPort.PortName = _currentPort;
             _serialPort.BaudRate = Int32.Parse(speedComboBox.SelectedItem.ToString());
 
             _justConnected = true;
             _position = 0;
             _errorsCount = 0;
             _dataError = false;
-            _serialPort.Open();
-            _serialPort.DataReceived += Port_OnReceiveData;
 
+            try
+            {
+                _serialPort.Open();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Port opening exception: {0}", ex.Message);
+                DisconnectPort();
+                return;
+            }
+
+            _serialPort.DataReceived += Port_OnReceiveData;
             portsComboBox.Enabled = false;
             speedComboBox.Enabled = false;
             connectButton.Text = disconnectString;
@@ -204,11 +208,14 @@ namespace SerialToHistogram
         }
 
 
+
         //--------------------------------------------------------------------------------------------------------------------------
         //  Disconnect serial port
         //--------------------------------------------------------------------------------------------------------------------------
         public void DisconnectPort()
         {
+            CheckPort();
+
             _updateTimer.Enabled = false;
             _updateTimer.Stop();
             if (_serialPort.IsOpen)
@@ -217,11 +224,13 @@ namespace SerialToHistogram
                 _serialPort.DiscardInBuffer();
                 _serialPort.DiscardOutBuffer();
                 _serialPort.Close();
+                _serialPort = null;
             }
 
             portsComboBox.Enabled = true;
             speedComboBox.Enabled = true;
             connectButton.Text = connectString;
+            connectButton.BackColor = SystemColors.Control;
 
         }
 
@@ -235,7 +244,7 @@ namespace SerialToHistogram
             {
 
                 histogramChart.Series[0].Points.Clear();
-                double minimum = double.MaxValue;
+                double minimum = float.MaxValue;
                 double maximum = 0.0F;
                 bool valuesFound = false;
 
@@ -280,7 +289,11 @@ namespace SerialToHistogram
                         maximumLabel.Text = maximum.ToString(intDisplayFormat);
                         ptpLabel.Text = ptp.ToString(intDisplayFormat) + lsbValueString;
                     }
-                    if (!exportImageButton.Enabled) exportImageButton.Enabled = true;
+                    if (!exportImageButton.Enabled)
+                    {
+                        exportImageButton.Enabled = true;
+                        clearDataButton.Enabled = true;
+                    }
                 }
                 else
                 {
@@ -288,8 +301,8 @@ namespace SerialToHistogram
                     maximumLabel.Text = unknownValueString;
                     ptpLabel.Text = unknownValueString;
                     exportImageButton.Enabled = false;
+                    clearDataButton.Enabled = false;
                 }
-
 
                 if (_errorDisplayed)
                 {
@@ -401,9 +414,9 @@ namespace SerialToHistogram
                 {
                     this.Invoke(new MethodInvoker(() => methodName()));
                 }
-                catch (InvalidOperationException e)
+                catch (InvalidOperationException ex)
                 {
-                    Console.WriteLine(e.Message);
+                    Console.WriteLine("Invoking {0} method exception: {1}", methodName.ToString(), ex.Message);
                 }
             }
             else
@@ -412,6 +425,34 @@ namespace SerialToHistogram
             }
         }
 
+
+        //--------------------------------------------------------------------------------------------------------------------------
+        //  Check and Initialize SerialPort
+        //--------------------------------------------------------------------------------------------------------------------------
+        private void CheckPort()
+        {
+            if (_serialPort == null)
+            {
+                // We have to initialize the port after each invocation of the Close() method for the stable work
+                _serialPort = new SerialPort();
+            }
+        }
+
+
+        //--------------------------------------------------------------------------------------------------------------------------
+        //  Clear all buffers and values
+        //--------------------------------------------------------------------------------------------------------------------------
+        private void clearData()
+        {
+            Array.Clear(_readings, 0, _readings.Length);
+            Array.Clear(_histogram, 0, _histogram.Length);
+            _pointer = 0;
+            _averageValue = _averageADCValue = 0.0F;
+            _vRef = 0.0F;
+            UpdateAverageValue();
+            UpdateVrefValue();
+            UpdateChart();
+        }
 
         //--------------------------------------------------------------------------------------------------------------------------
         //  Process received message
@@ -527,7 +568,19 @@ namespace SerialToHistogram
 
             int i = 0;
             int firstByte = 0;
-            int lastByte = _position + port.Read(_buffer, _position, serialBufferSize - _position);
+            int lastByte;
+
+            try
+            {
+                lastByte = _position + port.Read(_buffer, _position, serialBufferSize - _position);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Port reading exception: {0}", ex.Message);
+                return;
+            }
+
+
             byte previousByte = 0;
             do {
 
@@ -613,6 +666,7 @@ namespace SerialToHistogram
             }
             histogramChart.Series[0].Points.Clear();
             UpdateAverageValue();
+            UpdateChart();
         }
 
 
@@ -635,6 +689,15 @@ namespace SerialToHistogram
             }
         }
 
+
+        //--------------------------------------------------------------------------------------------------------------------------
+        //  Clear Data Button click event
+        //--------------------------------------------------------------------------------------------------------------------------
+        private void clearDataButton_Click(object sender, EventArgs e)
+        {
+            clearData();
+            
+        }
 
         //--------------------------------------------------------------------------------------------------------------------------
         //  Chart Paint event - draw Label with the calibrated average value
@@ -674,7 +737,7 @@ namespace SerialToHistogram
         {
             _updateTimer.Elapsed -= OnTimedEvent;
             DisconnectPort();
-            // Because of "catch" in RunTheMethod it is not necessary to process events after disabling Port and Timer, but I leave it here just for the case.
+            // Because of "catch" in RunTheMethod it os not necessary to process events after disabling Port and Timer, but I leave it here just for the case.
             Application.DoEvents();
         }
 

@@ -56,6 +56,7 @@
             this.label6 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
+            this.clearDataButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.histogramChart)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -108,7 +109,7 @@
             this.portsComboBox.BackColor = System.Drawing.SystemColors.Window;
             this.portsComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.portsComboBox.FormattingEnabled = true;
-            this.portsComboBox.Location = new System.Drawing.Point(1326, 613);
+            this.portsComboBox.Location = new System.Drawing.Point(1326, 610);
             this.portsComboBox.Name = "portsComboBox";
             this.portsComboBox.Size = new System.Drawing.Size(190, 28);
             this.portsComboBox.TabIndex = 2;
@@ -137,7 +138,7 @@
             "57600",
             "74880",
             "115200"});
-            this.speedComboBox.Location = new System.Drawing.Point(1326, 647);
+            this.speedComboBox.Location = new System.Drawing.Point(1326, 644);
             this.speedComboBox.Name = "speedComboBox";
             this.speedComboBox.Size = new System.Drawing.Size(190, 28);
             this.speedComboBox.TabIndex = 4;
@@ -259,9 +260,9 @@
             // 
             this.exportImageButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.exportImageButton.Enabled = false;
-            this.exportImageButton.Location = new System.Drawing.Point(958, 613);
+            this.exportImageButton.Location = new System.Drawing.Point(958, 609);
             this.exportImageButton.Name = "exportImageButton";
-            this.exportImageButton.Size = new System.Drawing.Size(168, 127);
+            this.exportImageButton.Size = new System.Drawing.Size(168, 64);
             this.exportImageButton.TabIndex = 11;
             this.exportImageButton.Text = "Save PNG";
             this.exportImageButton.UseVisualStyleBackColor = true;
@@ -390,11 +391,24 @@
             this.label4.Text = "Minimum:";
             this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
+            // clearDataButton
+            // 
+            this.clearDataButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.clearDataButton.Enabled = false;
+            this.clearDataButton.Location = new System.Drawing.Point(958, 692);
+            this.clearDataButton.Name = "clearDataButton";
+            this.clearDataButton.Size = new System.Drawing.Size(168, 48);
+            this.clearDataButton.TabIndex = 13;
+            this.clearDataButton.Text = "Clear Data";
+            this.clearDataButton.UseVisualStyleBackColor = true;
+            this.clearDataButton.Click += new System.EventHandler(this.clearDataButton_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1528, 752);
+            this.Controls.Add(this.clearDataButton);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.exportImageButton);
             this.Controls.Add(this.groupBox1);
@@ -442,6 +456,7 @@
         private System.Windows.Forms.Label maximumLabel;
         private System.Windows.Forms.Label minimumLabel;
         private System.Windows.Forms.RadioButton millivoltsRadioButton;
+        private System.Windows.Forms.Button clearDataButton;
     }
 }
 
